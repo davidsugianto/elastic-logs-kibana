@@ -1,0 +1,64 @@
+---
+
+version: '3.5'
+
+networks:
+  elk:
+    driver: bridge
+
+services:
+
+  elasticsearch:
+    container_name: elasticsearch
+    hostname: elasticsearch
+    build:
+      context: ./elasticsearch
+    restart: always
+    environment:
+      - 'TZ=${TIMEZONE}'
+      - 'ES_JAVA_OPTS=-Xmx1g -Xms1g'
+      - 'ELASTIC_PASSWORD=elastic'
+    networks:
+      - elk
+    ports:
+      - "9200:9200"
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - ./data/elasticsearch:/usr/share/elasticsearch/data/:rw
+
+  logstash:
+    container_name: logstash
+    hostname: logstash
+    build:
+      context: ./logstash
+    restart: always
+    environment:
+      - 'TZ=${TIMEZONE}'
+      - 'LS_JAVA_OPTS=-Xmx1g -Xms1g'
+    networks:
+      - elk
+    ports:
+      - "5000:5000"
+    depends_on: 
+      - elasticsearch
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./logs/logstash:/home/proxy_logs:ro
+
+  kibana:
+    container_name: kibana
+    hostname: kibana
+    build:
+      context: ./kibana
+    restart: always
+    environment:
+      - 'TZ=${TIMEZONE}'
+    networks:
+      - elk
+    ports:
+      - "5601:5601"
+    depends_on: 
+      - elasticsearch
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
