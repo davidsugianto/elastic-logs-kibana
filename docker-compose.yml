@@ -10,9 +10,8 @@ services:
 
   elasticsearch:
     container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.4.2
     hostname: elasticsearch
-    build:
-      context: ./elasticsearch
     restart: always
     environment:
       - 'TZ=${TIMEZONE}'
@@ -28,9 +27,8 @@ services:
 
   logstash:
     container_name: logstash
+    image: docker.elastic.co/logstash/logstash:7.4.2
     hostname: logstash
-    build:
-      context: ./logstash
     restart: always
     environment:
       - 'TZ=${TIMEZONE}'
@@ -38,7 +36,7 @@ services:
     networks:
       - elk
     ports:
-      - "5000:5000"
+      - "5044:5044"
     depends_on: 
       - elasticsearch
     volumes:
@@ -48,17 +46,34 @@ services:
 
   kibana:
     container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.4.2
     hostname: kibana
-    build:
-      context: ./kibana
     restart: always
     environment:
       - 'TZ=${TIMEZONE}'
     networks:
       - elk
-    ports:
-      - "5601:5601"
+    expose:
+      - '5601'
     depends_on: 
       - elasticsearch
     volumes:
       - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+
+  httpd:
+    container_name: nginx
+    image: bitnami/nginx:${NGINX_VERSION}-${OS_VERSION}
+    hostname: nginx
+    restart: always
+    environment:
+      - 'TZ=${TIMEZONE}'
+    depends_on:
+      - kibana
+    networks:
+      - elk
+    ports:
+      - '80:8080'
+      - '443:8443'
+    volumes:
+      - ./config/nginx/vhost/elk.conf:/opt/bitnami/nginx/conf/vhosts/elk.conf:ro
+      - ./logs/nginx/${NGINX_VERSION}:/opt/bitnami/nginx/logs:rw
