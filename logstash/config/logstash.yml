@@ -11,3 +11,7 @@ xpack.monitoring.elasticsearch.hosts: [ "http://elasticsearch:9200" ]
 xpack.monitoring.enabled: true
 xpack.monitoring.elasticsearch.username: elastic
 xpack.monitoring.elasticsearch.password: elastic
+
+path.data: /var/lib/logstash
+path.config: /etc/logstash/conf.d
+path.logs: /var/log/logstash

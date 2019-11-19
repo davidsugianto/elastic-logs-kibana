@@ -1,0 +1,4 @@
+# - pipeline.id: nginx
+  # path.config: "/etc/logstash/conf.d/logstash_nginx.conf"
+- pipeline.id: system
+  path.config: "/etc/logstash/conf.d/logstash_system.conf"

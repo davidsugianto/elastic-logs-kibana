@@ -25,24 +25,25 @@ services:
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
       - ./data/elasticsearch:/usr/share/elasticsearch/data/:rw
 
-  logstash:
-    container_name: logstash
-    image: docker.elastic.co/logstash/logstash:7.4.2
-    hostname: logstash
-    restart: always
-    environment:
-      - 'TZ=${TIMEZONE}'
-      - 'LS_JAVA_OPTS=-Xmx1g -Xms1g'
-    networks:
-      - elk
-    ports:
-      - "5044:5044"
-    depends_on: 
-      - elasticsearch
-    volumes:
-      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
-      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
-      - ./logs/logstash:/home/proxy_logs:ro
+  # logstash:
+  #   container_name: logstash
+  #   image: docker.elastic.co/logstash/logstash:7.4.2
+  #   hostname: logstash
+  #   restart: always
+  #   environment:
+  #     - 'TZ=${TIMEZONE}'
+  #     - 'LS_JAVA_OPTS=-Xmx1g -Xms1g'
+  #   networks:
+  #     - elk
+  #   ports:
+  #     - "5044:5044"
+  #   depends_on: 
+  #     - elasticsearch
+  #   volumes:
+  #     - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+  #     - ./logstash/pipeline:/usr/share/logstash/pipeline:rw
+  #     - ./config/logstash:/etc/logstash/conf.d:rw
+  #     - ./logs/logstash:/home/proxy_logs:ro
 
   kibana:
     container_name: kibana
@@ -59,6 +60,22 @@ services:
       - elasticsearch
     volumes:
       - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+
+  # filebeat:
+  #   container_name: filebeat
+  #   image: docker.elastic.co/beats/filebeat:7.4.2
+  #   hostname: filebeat
+  #   restart: always
+  #   environment:
+  #     - 'TZ=${TIMEZONE}'
+  #   networks:
+  #     - elk
+  #   links:
+  #     - logstash
+  #   volumes:
+  #     - ./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:rw
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - /var/lib/docker/containers/:/var/lib/docker/containers/:ro
 
   httpd:
     container_name: nginx
